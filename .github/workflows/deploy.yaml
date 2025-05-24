@@ -13,16 +13,24 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+      - name: Set working directory
+        run: |
+          echo "Working in: $PWD"
+        working-directory: ${{ github.workspace }}
+
       - name: Build Docker image
         run: |
           docker build -t k8s-node-app:v1 .
+        working-directory: ${{ github.workspace }}
 
       - name: Apply Kubernetes Deployment
         run: |
           kubectl apply -f deployment.yaml
           kubectl apply -f service.yaml
+        working-directory: ${{ github.workspace }}
 
       - name: Show Pods and Services
         run: |
           kubectl get pods
           kubectl get svc
+        working-directory: ${{ github.workspace }}
