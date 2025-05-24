@@ -1,26 +1,28 @@
-name: Node.js CI
+name: Local CI/CD with Self-Hosted Runner
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:  # allows manual trigger from GitHub interface
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  deploy:
+    runs-on: self-hosted
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+      - name: Build Docker image
+        run: |
+          docker build -t k8s-node-app:v1 .
 
-      - name: Install dependencies
-        run: npm install
+      - name: Apply Kubernetes Deployment
+        run: |
+          kubectl apply -f deployment.yaml
+          kubectl apply -f service.yaml
 
-      - name: Test Build
-        run: echo "✅ Node.js app builds successfully!"
+      - name: Show Pods and Services
+        run: |
+          kubectl get pods
+          kubectl get svc
