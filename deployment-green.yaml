@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-app-green
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-app
+      color: green
+  template:
+    metadata:
+      labels:
+        app: node-app
+        color: green
+    spec:
+      containers:
+        - name: node-app
+          image: k8s-node-app:v3
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
