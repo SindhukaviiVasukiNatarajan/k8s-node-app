@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-app-blue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: node-app
+      color: blue
+  template:
+    metadata:
+      labels:
+        app: node-app
+        color: blue
+    spec:
+      containers:
+        - name: node-app
+          image: k8s-node-app:v2
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
