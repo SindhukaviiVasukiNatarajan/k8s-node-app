@@ -33,7 +33,7 @@ jobs:
           STRATEGY="${{ github.event.inputs.strategy }}"
 
           if [ "$STRATEGY" = "recreate" ]; then
-            kubectl apply -f recreate-deployment.yaml
+            kubectl apply -f deployment-recreate.yaml
           
           elif [ "$STRATEGY" = "rolling" ]; then
             kubectl apply -f deployment-RollingUpdate.yaml
