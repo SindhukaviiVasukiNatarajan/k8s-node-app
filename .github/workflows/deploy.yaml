@@ -4,49 +4,47 @@ on:
   workflow_dispatch:
     inputs:
       strategy:
-        description: 'Deployment Strategy (recreate / rolling / canary / bluegreen)'
+        description: 'Deployment Strategy'
         required: true
         default: 'recreate'
+        type: choice
+        options:
+          - recreate
+          - rolling
+          - canary
+          - bluegreen
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Set up kubectl
-      uses: azure/setup-kubectl@v3
-      with:
-        version: 'latest'
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
 
-    - name: Start Minikube
-      run: |
-        minikube start || echo "Minikube already running"
+      - name: Deploy with selected strategy
+        run: |
+          echo "Strategy selected: ${{ github.event.inputs.strategy }}"
+          STRATEGY="${{ github.event.inputs.strategy }}"
 
-    - name: Deploy Based on Strategy
-      run: |
-        STRATEGY="${{ github.event.inputs.strategy }}"
-
-        if [ "$STRATEGY" = "recreate" ]; then
-          kubectl apply -f k8s/recreate-deployment.yaml
-
-        elif [ "$STRATEGY" = "rolling" ]; then
-          kubectl apply -f k8s/rollingupdate-deployment.yaml
-
-        elif [ "$STRATEGY" = "canary" ]; then
-          kubectl apply -f k8s/canary-deployment.yaml
-
-        elif [ "$STRATEGY" = "bluegreen" ]; then
-          kubectl apply -f k8s/blue-deployment.yaml
-          echo "Waiting for Blue deployment to stabilize..."
-          sleep 10
-          echo "Now switching service to Green..."
-          kubectl apply -f k8s/green-deployment.yaml
-          kubectl apply -f k8s/green-service.yaml
-
-        else
-          echo "Invalid strategy: $STRATEGY"
-          exit 1
-        fi
+          if [ "$STRATEGY" = "recreate" ]; then
+            kubectl apply -f recreate-deployment.yaml
+          
+          elif [ "$STRATEGY" = "rolling" ]; then
+            kubectl apply -f deployment-RollingUpdate.yaml
+          
+          elif [ "$STRATEGY" = "canary" ]; then
+            kubectl apply -f deployment-canary.yaml
+          
+          elif [ "$STRATEGY" = "bluegreen" ]; then
+            kubectl apply -f deployment-blue.yaml
+            kubectl apply -f service.yaml
+          else
+            echo "Invalid strategy selected."
+            exit 1
+          fi
